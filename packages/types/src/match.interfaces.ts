@@ -73,7 +73,6 @@ export type MatchStatus =
 export interface Match {
   competition: Competition;
   venue: Venue;
-  /** ISO-8601 datetime string with timezone offset, e.g. "2024-07-24T19:00:00+02:00" */
   kickoff: string;
   status: MatchStatus;
   teams: Teams;
@@ -82,7 +81,6 @@ export interface Match {
   lineups: Lineups;
 }
 
-/** Lightweight representation used for endpoint generation — lineups/scorers optional */
 export interface MatchSummary {
   competition: Competition;
   venue: Venue;
@@ -91,7 +89,6 @@ export interface MatchSummary {
   teams: Teams;
 }
 
-/** A generated API endpoint entry */
 export interface GeneratedEndpoint {
   match: MatchSummary;
   endpoint: string;

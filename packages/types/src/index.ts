@@ -13,4 +13,4 @@ export type {
   Match,
   MatchSummary,
   GeneratedEndpoint,
-} from "./match.types.js";
+} from "./match.interfaces";
