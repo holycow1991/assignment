@@ -1,0 +1,16 @@
+export type {
+  Competition,
+  Venue,
+  Teams,
+  HalfTimeScore,
+  Score,
+  ScorerType,
+  Scorer,
+  Player,
+  TeamLineup,
+  Lineups,
+  MatchStatus,
+  Match,
+  MatchSummary,
+  GeneratedEndpoint,
+} from "./match.types.js";

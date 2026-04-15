@@ -1,0 +1,31 @@
+{
+  "name": "assignment",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": "23.11.1",
+    "pnpm": "10.33.0"
+  },
+  "description": "Assignment task — Paris 2024 Olympic football endpoint generator",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:web": "pnpm --filter @assignment/web dev",
+    "dev:api": "pnpm --filter @assignment/api dev",
+    "build": "pnpm --filter @assignment/types build && pnpm --parallel --filter \"./apps/*\" build",
+    "build:web": "pnpm --filter @assignment/web build",
+    "build:api": "pnpm --filter @assignment/api build",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "keywords": [
+    "assignment"
+  ],
+  "author": "Wadim Jarochowicz",
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "esbuild"
+    ]
+  }
+}
