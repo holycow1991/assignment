@@ -1,6 +1,7 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Param } from "@nestjs/common";
 import { EventsService } from "./events.service";
 import { EventListResponseDto } from "./dto/event-list-response.dto";
+import { GetEventByIdDto } from "./dto/get-event-by-id.dto";
 
 @Controller("events")
 export class EventsController {
@@ -10,4 +11,7 @@ export class EventsController {
   getEvents(): Promise<EventListResponseDto> {
     return this.eventsService.getEvents();
   }
+
+  @Get(":id")
+  getEventById(@Param() { id }: GetEventByIdDto) {}
 }
