@@ -1,9 +1,14 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { randomUUID } from "node:crypto";
+import { Match } from "@assignment/types";
 
 @Entity("events")
 export class EventEntity {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
+
+  @Column({ unique: true })
+  externalId!: string;
 
   @Column()
   sourceEventId!: string;
@@ -58,4 +63,14 @@ export class EventEntity {
 
   @Column({ type: "jsonb" })
   competitors!: { name: string }[];
+
+  @Column({ type: "jsonb", nullable: true })
+  eventData!: Match | null;
+
+  @BeforeInsert()
+  generateExternalId() {
+    if (!this.externalId) {
+      this.externalId = randomUUID();
+    }
+  }
 }
