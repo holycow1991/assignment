@@ -9,7 +9,7 @@ import {
   Venue,
 } from "@assignment/types";
 
-export class MatchResponseDto {
+export class MatchResponseDto implements Match {
   competition: Competition;
   venue: Venue;
   kickoff: string;

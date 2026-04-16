@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { ScheduleDayResponse } from "./event.types";
+import { RawMatchData, ScheduleDayResponse } from "./event.types";
 import { ScheduleDayListResponseDto } from "./dto/schedule-day-list-response.dto";
+import { MatchDataAdapter } from "./match-data.adapter";
+import { MatchResponseDto } from "./dto/match-response.dto";
 
 @Injectable()
 export class EventsApiClient {
@@ -36,6 +38,21 @@ export class EventsApiClient {
             new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
         ),
     );
+  }
+
+  async getEventById(sourceEventId: string) {
+    const url = `${this.baseUrl}/OG2024/data/RES_ByRSC_H2H~comp=OG2024~disc=FBL~rscResult=${sourceEventId}~lang=ENG.json`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch event details for ${sourceEventId}: ${response.statusText}`,
+      );
+    }
+    const matchData = (await response.json()) as RawMatchData;
+
+    const translatedData = new MatchDataAdapter().process(matchData);
+
+    return new MatchResponseDto(translatedData);
   }
 
   private getOlympicsDateUrls(): string[] {

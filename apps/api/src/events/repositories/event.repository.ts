@@ -18,7 +18,7 @@ export class EventRepository {
     return this.repo.find({ order: { startDate: "ASC" } });
   }
 
-  findById(id: string): Promise<EventEntity | null> {
-    return this.repo.findOneBy({ id });
+  findByExternalId(externalId: string): Promise<EventEntity | null> {
+    return this.repo.findOneBy({ externalId });
   }
 }

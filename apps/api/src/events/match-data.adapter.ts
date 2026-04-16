@@ -10,92 +10,16 @@ import type {
   TeamLineup,
   Venue,
 } from "@assignment/types";
+import {
+  RawMatchData,
+  Item,
+  ExtendedInfo,
+  Period,
+  PlayByPeriod,
+} from "./event.types";
 
-interface ExtendedInfo {
-  ei_code: string;
-  ei_value: string;
-}
-
-interface Period {
-  p_code: string;
-  home: { score: string };
-  away: { score: string };
-}
-
-interface PbpAthlete {
-  pbpat_code: string;
-  pbpat_bib?: string;
-  pbpat_role?: string;
-}
-
-interface PbpCompetitor {
-  pbpc_code: string;
-  athletes?: PbpAthlete[];
-}
-
-interface PbpAction {
-  pbpa_Action: string;
-  pbpa_Result?: string;
-  pbpa_When: string;
-  competitors?: PbpCompetitor[];
-}
-
-interface PlayByPeriod {
-  subcode: string;
-  actions: PbpAction[];
-}
-
-interface EventUnitEntry {
-  eue_code: string;
-  eue_value: string;
-  eue_pos?: string;
-}
-
-interface TeamAthlete {
-  bib?: string;
-  athlete: {
-    code: string;
-    givenName?: string;
-    familyName?: string;
-    registeredEvents?: Array<{
-      eventEntries?: Array<{ ee_code: string; ee_value: string }>;
-    }>;
-  };
-  eventUnitEntries?: EventUnitEntry[];
-}
-
-interface TeamCoach {
-  function: { functionCode: string };
-  coach: { givenName?: string; familyName?: string };
-}
-
-interface Item {
-  teamCode?: string;
-  participant: { name: string };
-  eventUnitEntries?: EventUnitEntry[];
-  teamAthletes?: TeamAthlete[];
-  teamCoaches?: TeamCoach[];
-}
-
-export interface H2HResponse {
-  results: {
-    eventUnit: { description: string };
-    extendedInfos: ExtendedInfo[];
-    periods: Period[];
-    schedule: {
-      startDate: string;
-      venue?: { description: string };
-      location?: { longDescription: string };
-    };
-    items: Item[];
-    playByPlay?: PlayByPeriod[];
-  };
-}
-
-// ── Adapter ───────────────────────────────────────────────────────────────────
-
-export class EventAdapter {
-  adapt(raw: H2HResponse): Match {
+export class MatchDataAdapter {
+  process(raw: RawMatchData): Match {
     const { results } = raw;
 
     const homeItem = this.findTeamItem(results.items, "HOME");
@@ -159,7 +83,7 @@ export class EventAdapter {
     };
   }
 
-  private mapVenue(schedule: H2HResponse["results"]["schedule"]): Venue {
+  private mapVenue(schedule: RawMatchData["results"]["schedule"]): Venue {
     const name = schedule.venue?.description ?? "";
     const longDesc = schedule.location?.longDescription ?? "";
     const city = longDesc.split(", ").at(-1) ?? longDesc;
