@@ -39,6 +39,39 @@ export class EventsService {
     return new EventListResponseDto(entities);
   }
 
+  async refetchEvents(): Promise<EventListResponseDto> {
+    this.logger.log("Refetching events from upstream schedule");
+    const { units } = await this.eventsApiClient.getEvents();
+    await this.eventRepository.upsert(units.map((unit) => unit.toEntity()));
+
+    const entities = await this.eventRepository.findAll();
+
+    this.logger.log(`Events refreshed from upstream: ${entities.length}`);
+
+    return new EventListResponseDto(entities);
+  }
+
+  async refetchEventById(id: string): Promise<MatchResponseDto> {
+    const event = await this.eventRepository.findByExternalId(id);
+
+    if (!event) {
+      this.logger.warn(`Requested event for refetch was not found: ${id}`);
+      throw new NotFoundException(`Event with id ${id} not found`);
+    }
+
+    this.logger.log(
+      `Refetching event details from upstream for ${id} (${event.sourceEventId})`,
+    );
+    const eventData = await this.eventsApiClient.getEventById(
+      event.sourceEventId,
+    );
+
+    event.eventData = eventData;
+    await this.eventRepository.upsert([event]);
+
+    return new MatchResponseDto(eventData);
+  }
+
   async getEventById(id: string) {
     const event = await this.eventRepository.findByExternalId(id);
 
