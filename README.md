@@ -254,7 +254,7 @@ Simplest self-hosted option:
 
 Hello future developers! -> here are some things you can do if you are willing to contribute:
 
-- [ ] Add proper migration system
+- [ ] Add proper migration system - currently we have naive synchronize: true approach, this is not what we want - however it's currently just PoC of devtool for QA engineers
 - [ ] Add proper config module with env var validation
 - [ ] Add tests
 - [ ] Add json diff inside application
