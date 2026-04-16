@@ -19,24 +19,9 @@ export class EventsService {
   ) {}
 
   async getEvents(): Promise<EventListResponseDto> {
-    const cachedEvents = await this.eventRepository.findAll();
+    const events = await this.eventRepository.findAll();
 
-    if (cachedEvents.length > 0) {
-      this.logger.log(`Returning ${cachedEvents.length} cached events`);
-      return new EventListResponseDto(cachedEvents);
-    }
-
-    this.logger.log("Event cache miss, fetching upstream schedule");
-    const { units } = await this.eventsApiClient.getEvents();
-    await this.eventRepository.upsert(units.map((unit) => unit.toEntity()));
-
-    const entities = await this.eventRepository.findAll();
-
-    this.logger.log(
-      `Cached events refreshed from upstream: ${entities.length}`,
-    );
-
-    return new EventListResponseDto(entities);
+    return new EventListResponseDto(events);
   }
 
   async refetchEvents(): Promise<EventListResponseDto> {

@@ -11,7 +11,7 @@ export class EventRepository {
   ) {}
 
   async upsert(entities: EventEntity[]): Promise<void> {
-    await this.repo.upsert(entities, ["id"]);
+    await this.repo.upsert(entities, ["sourceEventId"]);
   }
 
   findAll(): Promise<EventEntity[]> {

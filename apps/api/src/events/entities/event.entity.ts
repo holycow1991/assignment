@@ -10,7 +10,7 @@ export class EventEntity {
   @Column({ unique: true })
   externalId!: string;
 
-  @Column()
+  @Column({ unique: true })
   sourceEventId!: string;
 
   @Column()
