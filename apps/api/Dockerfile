@@ -23,6 +23,8 @@ COPY --from=deps /app/package.json ./package.json
 COPY --from=deps /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=build /app/apps/api ./apps/api
 COPY --from=build /app/packages/types ./packages/types
+COPY apps/api/docker-entrypoint.sh ./apps/api/docker-entrypoint.sh
 WORKDIR /app/apps/api
+RUN chmod +x docker-entrypoint.sh
 EXPOSE 3001
-CMD ["node", "dist/main"]
+CMD ["./docker-entrypoint.sh"]

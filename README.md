@@ -95,6 +95,7 @@ Applications:
 
 - frontend: `http://localhost:3000`
 - API: `http://localhost:3001/api`
+- API root status: `http://localhost:3001`
 
 Run separately if needed:
 
@@ -142,6 +143,10 @@ Defined in `apps/web/.env.local`:
 ## API
 
 All routes are prefixed with `/api`.
+
+### `GET /`
+
+Returns a small status payload with links to the API entrypoints.
 
 ### `GET /api/events`
 
@@ -203,6 +208,14 @@ Run from the repo root:
 | `pnpm build:api` | Build the backend                  |
 | `pnpm typecheck` | Type-check all workspaces          |
 
+API migration commands:
+
+| Command                                              | Description                                                                       |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `pnpm --filter @assignment/api migration:run:dev`    | Run pending migrations against the local database using the TypeScript datasource |
+| `pnpm --filter @assignment/api migration:revert:dev` | Revert the last local migration                                                   |
+| `pnpm --filter @assignment/api migration:show`       | Show migration status                                                             |
+
 ## Docker
 
 ### Local Postgres only
@@ -237,6 +250,7 @@ Notes:
 
 - `NEXT_PUBLIC_API_URL` is baked into the web image at build time, so changing it requires rebuilding the frontend container.
 - If you deploy on a VPS, place a reverse proxy such as Nginx in front of the frontend and API.
+- The API container runs pending database migrations before the Nest server starts.
 
 ## Deployment
 
@@ -254,12 +268,14 @@ Simplest self-hosted option:
 
 Hello future developers! -> here are some things you can do if you are willing to contribute:
 
-- [ ] Add proper migration system - currently we have naive synchronize: true approach, this is not what we want - however it's currently just PoC of devtool for QA engineers
+- [x] Migration system
 - [ ] Add proper config module with env var validation
 - [ ] Add tests
 - [ ] Add json diff inside application
 - [ ] Refactor backend into hexagonal architecture - optional as we are short on time.
 - [ ] Improve caching strategy as in future application could be extended with live events - however now it's not needed as we operate in distand past.
+- [ ] Add Authorization - possibly JWT with token reuse detection on backend, not needed as this serves as devtool
+- [ ] Add rate limiting
 
 ## Implementation Notes
 
@@ -328,3 +344,10 @@ The current implementation makes these fallback assumptions:
 ### Current tradeoff
 
 The parser is intentionally defensive: it prefers returning a usable partial match payload over failing the entire response when optional upstream fields are missing. That keeps the API resilient, but it also means some fields may contain fallback values rather than hard validation errors.
+
+### Migration strategy
+
+- `synchronize` is disabled.
+- TypeORM migrations are the source of truth for schema changes.
+- In non-production environments, pending migrations run automatically through the TypeORM module configuration.
+- In production Docker deployments, the API container executes `migration:run` before starting the Nest server.

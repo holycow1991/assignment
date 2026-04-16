@@ -11,7 +11,7 @@ export class EventsApiClient {
   private readonly logger = new Logger(EventsApiClient.name);
 
   constructor(configService: ConfigService) {
-    this.baseUrl = configService.get<string>(
+    this.baseUrl = configService.getOrThrow<string>(
       "OLYMPICS_BASE_URL",
       "https://stacy.olympics.com",
     );

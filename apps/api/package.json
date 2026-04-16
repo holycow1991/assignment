@@ -6,6 +6,12 @@
     "dev": "nest start --watch",
     "build": "nest build",
     "start": "node dist/main",
+    "typeorm": "typeorm-ts-node-commonjs -d src/database/data-source.ts",
+    "migration:run:dev": "pnpm typeorm migration:run",
+    "migration:revert:dev": "pnpm typeorm migration:revert",
+    "migration:show": "pnpm typeorm migration:show",
+    "migration:run": "typeorm -d dist/database/data-source.js migration:run",
+    "migration:revert": "typeorm -d dist/database/data-source.js migration:revert",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
