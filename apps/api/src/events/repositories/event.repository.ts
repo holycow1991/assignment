@@ -15,7 +15,7 @@ export class EventRepository {
   }
 
   findAll(): Promise<EventEntity[]> {
-    return this.repo.find({ order: { startDate: "ASC" } });
+    return this.repo.find({ order: { endDate: "ASC", sourceEventId: "ASC" } });
   }
 
   findByExternalId(externalId: string): Promise<EventEntity | null> {
