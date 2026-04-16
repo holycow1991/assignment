@@ -1,266 +1,320 @@
-# Paris 2024 — Olympic Football Endpoint Generator
+# Paris 2024 Football Events Dashboard
 
-A full-stack tool for QA engineers to generate, review, and export expected API endpoints for every football (soccer) match played during the **Paris 2024 Olympic Games**.
+Full-stack monorepo for importing, caching, browsing, refetching, and exporting Paris 2024 Olympic football events.
 
-Generated endpoints serve as reference values for automated tests that validate the example [FootyScores](https://footyscores.example) API implementation.
+The project contains two applications:
 
----
+- `apps/api`: NestJS API backed by PostgreSQL
+- `apps/web`: Next.js dashboard backed by the API
 
-## Table of Contents
+## What It Does
 
-- [Overview](#overview)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Available Scripts](#available-scripts)
-- [API Reference](#api-reference)
-- [Endpoint Generation Logic](#endpoint-generation-logic)
-- [Data Export](#data-export)
-- [Assumptions](#assumptions)
+The backend fetches Olympic schedule data, filters football events, stores them in PostgreSQL, and exposes a small cached API.
 
----
+The frontend displays cached events in a table and lets you:
 
-## Overview
+- refetch the full football schedule
+- refetch a single event detail payload
+- open the raw event API response
+- export an event detail payload as JSON
 
-The application fetches the official Paris 2024 Olympic Games competition schedule, filters football matches, and generates a deterministic, well-structured API endpoint for each match. Results can be reviewed in the browser UI and exported as machine-readable JSON for use in automated test suites.
+## Stack
 
-### Key Features
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js 15, React 19, TanStack Query, TypeScript |
+| Backend | NestJS 11, TypeScript |
+| Database | PostgreSQL 17 |
+| ORM | TypeORM 0.3 |
+| Package manager | pnpm 10 |
+| Runtime | Node.js 23 |
 
-- **Load & display** all Olympic football matches with generated endpoints in a table
-- **Export to JSON** — one-click download of the full results as `paris-2024-endpoints.json`
-- **Deterministic output** — results are always sorted by kickoff date and time
-- **Bonus** — JSON comparison against the live FootyScores API
+## Repo Layout
 
----
-
-## Tech Stack
-
-| Layer    | Technology                     |
-| -------- | ------------------------------ |
-| Frontend | React 19, Vite 6, TypeScript 5 |
-| Backend  | NestJS 11, TypeScript 5        |
-| Database | PostgreSQL 17                  |
-| ORM      | TypeORM 0.3                    |
-| Runtime  | Node.js 23                     |
-
----
-
-## Project Structure
-
-```
+```text
 assignment/
 ├── apps/
-│   ├── web/                    # React + Vite frontend  (@assignment/web)
-│   │   ├── src/
-│   │   │   ├── main.tsx        # React 18 entry point
-│   │   │   └── App.tsx         # Main UI component
-│   │   ├── vite.config.ts      # Dev server (port 3000) + /api proxy
-│   │   └── index.html
-│   └── api/                    # NestJS backend          (@assignment/api)
-│       ├── src/
-│       │   ├── main.ts         # Bootstrap (port 3001, global prefix /api)
-│       │   └── app.module.ts   # Root module — ConfigModule + TypeOrmModule
-│       ├── nest-cli.json
-│       └── .env.example
+│   ├── api/
+│   └── web/
 ├── packages/
-│   └── types/                  # Shared TypeScript interfaces (@assignment/types)
-│       └── src/
-│           ├── match.types.ts  # Match, Competition, Venue, Score, Scorer …
-│           └── index.ts
-├── docker-compose.yml          # Postgres 17 service
-├── tsconfig.base.json          # Shared strict TypeScript base
-├── pnpm-workspace.yaml
-└── package.json                # Root workspace — shared scripts
+│   └── types/
+├── docker-compose.yml
+├── docker-compose.prod.yml
+└── package.json
 ```
-
----
 
 ## Prerequisites
 
-| Tool                    | Version   | Install                                                |
-| ----------------------- | --------- | ------------------------------------------------------ |
-| Node.js                 | `23.11.1` | [nvm](https://github.com/nvm-sh/nvm) recommended       |
-| pnpm                    | `10.33.0` | `npm i -g pnpm`                                        |
-| Docker + Docker Compose | v2+       | [docs.docker.com](https://docs.docker.com/get-docker/) |
+- Node.js `23.11.1`
+- pnpm `10.33.0`
+- Docker with Compose
 
----
-
-## Getting Started
-
-### 1 — Clone & install dependencies
+If you use `nvm`, run:
 
 ```bash
-git clone <repo-url>
-cd assignment
-
-# Use the correct Node version (if using nvm)
 nvm use
+```
 
-# Install all workspace dependencies
+## Local Development
+
+### 1. Install dependencies
+
+```bash
 pnpm install
 ```
 
-### 2 — Start the database
+### 2. Start PostgreSQL
 
 ```bash
 docker compose up -d
 ```
 
-Postgres 17 will be available on `localhost:5432`. The `assignment` database is created automatically.
+This uses the local database-only Compose file.
 
-### 3 — Configure the API environment
+### 3. Configure environment variables
+
+API:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
 ```
 
-### 4 — Run the full stack
+Web:
 
 ```bash
-# Start both apps in parallel
+cp apps/web/.env.example apps/web/.env.local
+```
+
+### 4. Run both apps
+
+```bash
 pnpm dev
 ```
 
-| App      | URL                       |
-| -------- | ------------------------- |
-| Frontend | http://localhost:3000     |
-| API      | http://localhost:3001/api |
+Applications:
 
-Or run them individually:
+- frontend: `http://localhost:3000`
+- API: `http://localhost:3001/api`
+
+Run separately if needed:
 
 ```bash
-pnpm dev:web   # Vite on port 3000
-pnpm dev:api   # NestJS on port 3001
+pnpm dev:web
+pnpm dev:api
 ```
 
-### 5 — Use the app
+## Typical Usage Flow
 
-1. Open **http://localhost:3000** in your browser.
-2. Click **"Load & Generate Endpoints"** to fetch and process the schedule.
-3. Review the match list and their generated endpoints.
-4. Click **"Export JSON"** to download `paris-2024-endpoints.json`.
+On a fresh database, `GET /api/events` returns cached rows only, so the list can be empty until you populate the cache.
 
----
+Typical flow:
+
+1. Open `http://localhost:3000`
+2. Click `Refetch everything`
+3. Wait for the schedule import to finish
+4. Browse cached football events
+5. Use row actions to refetch or export one event
 
 ## Environment Variables
 
-Configuration lives in `apps/api/.env` (copy from `.env.example`):
+### API
 
-| Variable  | Default      | Description         |
-| --------- | ------------ | ------------------- |
-| `PORT`    | `3001`       | NestJS server port  |
-| `DB_HOST` | `localhost`  | PostgreSQL host     |
-| `DB_PORT` | `5432`       | PostgreSQL port     |
-| `DB_USER` | `postgres`   | PostgreSQL username |
-| `DB_PASS` | `postgres`   | PostgreSQL password |
-| `DB_NAME` | `assignment` | Database name       |
+Defined in `apps/api/.env`:
 
----
+| Variable | Default |
+| --- | --- |
+| `PORT` | `3001` |
+| `DB_HOST` | `localhost` |
+| `DB_PORT` | `5432` |
+| `DB_USER` | `postgres` |
+| `DB_PASS` | `postgres` |
+| `DB_NAME` | `assignment` |
+| `OLYMPICS_BASE_URL` | `https://stacy.olympics.com` |
 
-## Available Scripts
+### Web
 
-Run from the **repo root**:
+Defined in `apps/web/.env.local`:
 
-| Script           | Description                           |
-| ---------------- | ------------------------------------- |
-| `pnpm dev`       | Start `web` and `api` in parallel     |
-| `pnpm dev:web`   | Start Vite frontend only              |
-| `pnpm dev:api`   | Start NestJS API only                 |
-| `pnpm build`     | Build all packages (types → web, api) |
-| `pnpm build:web` | Build frontend only                   |
-| `pnpm build:api` | Build API only                        |
-| `pnpm typecheck` | TypeScript type-check all workspaces  |
+| Variable | Default |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3001/api` |
 
-Docker shortcuts:
-
-```bash
-docker compose up -d      # Start Postgres in background
-docker compose down       # Stop containers (data persisted)
-docker compose down -v    # Stop containers + wipe volume data
-```
-
----
-
-## API Reference
+## API
 
 All routes are prefixed with `/api`.
 
-| Method | Path                     | Description                                              |
-| ------ | ------------------------ | -------------------------------------------------------- |
-| `GET`  | `/api/matches/endpoints` | Returns all generated match endpoints, sorted by kickoff |
+### `GET /api/events`
 
-### Response shape
+Returns cached football events.
 
-```jsonc
-[
-  {
-    "match": {
-      "competition": { "name": "...", "season": "...", "round": "..." },
-      "venue": { "name": "...", "city": "..." },
-      "kickoff": "2024-07-24T19:00:00+02:00",
-      "status": "FT",
-      "teams": { "home": "France", "away": "United States" },
-    },
-    "endpoint": "/matches/2024-07-24/france-vs-united-states",
-  },
-]
-```
-
----
-
-## Endpoint Generation Logic
-
-Each endpoint is constructed deterministically from the match data:
-
-```
-/matches/{YYYY-MM-DD}/{home-slug}-vs-{away-slug}
-```
-
-- **Date** — derived from the `kickoff` timestamp (UTC date part)
-- **Team slugs** — lower-cased, spaces replaced with hyphens, special characters removed
-- **Ordering** — results are sorted ascending by `kickoff` (ISO-8601 string sort is stable)
-
-Given the same schedule input, the output is always identical.
-
----
-
-## Data Export
-
-The **Export JSON** button in the UI downloads the full results array as `paris-2024-endpoints.json`. This file is suitable for:
-
-- Feeding directly into automated test frameworks
-- Diffing against a previous run to detect schedule changes
-- Seeding test fixtures
-
-### Example output
+Example response:
 
 ```json
-[
-  {
-    "match": {
-      "competition": {
-        "name": "Olympic Games",
-        "season": "Paris 2024",
-        "round": "Group Stage"
-      },
-      "venue": { "name": "Parc des Princes", "city": "Paris" },
-      "kickoff": "2024-07-24T19:00:00+02:00",
-      "status": "FT",
-      "teams": { "home": "France", "away": "United States" }
-    },
-    "endpoint": "/matches/2024-07-24/france-vs-united-states"
-  }
-]
+{
+	"events": [
+		{
+			"externalId": "d3a8f9d8-...",
+			"genderCode": "M",
+			"startDate": "2024-07-24T17:00:00.000Z",
+			"competitors": [{ "name": "France" }, { "name": "United States" }]
+		}
+	]
+}
 ```
 
----
+### `GET /api/events/refetch`
 
-## Assumptions
+Fetches the football schedule from the upstream Olympics API, upserts it into PostgreSQL, and returns the refreshed cached list.
 
-- The official Olympic schedule is treated as the single source of truth for match data. Any match listed under the **Football** sport category is included; all other sports are ignored.
-- Where kickoff times are missing or ambiguous in the source data, the match is still included with `kickoff` set to the start-of-day in local venue time.
-- Team names are normalised for slug generation by removing diacritics and punctuation (e.g. `Côte d'Ivoire` → `cote-divoire`).
-- The default sort order is **ascending by kickoff datetime**. Matches at the same exact minute are further sorted alphabetically by home team name to ensure a stable, predictable order.
-- `synchronize: true` is enabled in TypeORM for non-production environments — schema is auto-managed during development. In production, run explicit migrations.
+### `GET /api/events/:id`
+
+Returns one event detail payload by public `externalId`.
+
+If the detail is missing in cache, the API fetches it from upstream, stores it, and returns it.
+
+### `GET /api/events/refetch/:id`
+
+Refetches one event detail payload from upstream and updates the cached event row.
+
+## Error Shape
+
+The API uses a global exception filter. Errors are returned in this shape:
+
+```json
+{
+	"statusCode": 404,
+	"message": "Event with id ... not found",
+	"path": "/api/events/...",
+	"timestamp": "2026-04-16T12:00:00.000Z"
+}
+```
+
+## Scripts
+
+Run from the repo root:
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Run `web` and `api` in parallel |
+| `pnpm dev:web` | Run the Next.js app |
+| `pnpm dev:api` | Run the NestJS API |
+| `pnpm build` | Build shared types, then both apps |
+| `pnpm build:web` | Build the frontend |
+| `pnpm build:api` | Build the backend |
+| `pnpm typecheck` | Type-check all workspaces |
+
+## Docker
+
+### Local Postgres only
+
+```bash
+docker compose up -d
+docker compose down
+docker compose down -v
+```
+
+### Full-stack deployment on VPS/VM
+
+The repo includes `docker-compose.prod.yml` for:
+
+- `postgres`
+- `api`
+- `web`
+
+Start it with:
+
+```bash
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
+Stop it with:
+
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+Notes:
+
+- `NEXT_PUBLIC_API_URL` is baked into the web image at build time, so changing it requires rebuilding the frontend container.
+- If you deploy on a VPS, place a reverse proxy such as Nginx in front of the frontend and API.
+
+## Deployment
+
+Simplest hosted option:
+
+- `apps/web` on Vercel
+- `apps/api` on Railway
+- PostgreSQL on Railway
+
+Simplest self-hosted option:
+
+- one VM or VPS using `docker-compose.prod.yml`
+
+## Implementation Notes
+
+### How data is retrieved and parsed
+
+The backend uses two upstream retrieval flows.
+
+#### 1. Schedule import
+
+- The API client generates one Olympics schedule URL per day for the fixed Paris 2024 window from `2024-07-24` through `2024-08-11`.
+- Those day endpoints are fetched in parallel.
+- All returned `units` arrays are flattened into one collection.
+- Only rows with `disciplineCode === "FBL"` are kept.
+- The schedule DTO maps each upstream schedule unit into the local `EventEntity` shape used for caching.
+- For the cached list response, only a subset of fields is exposed: `externalId`, `genderCode`, `startDate`, and competitor names.
+
+#### 2. Event detail retrieval
+
+- When `/api/events/:id` or `/api/events/refetch/:id` is called, the backend resolves the cached row by public `externalId`.
+- It then uses the row's `sourceEventId` to fetch the upstream match detail payload.
+- That raw payload is translated by `MatchDataAdapter` into the shared `Match` shape returned by the API.
+
+Detail parsing currently uses these rules:
+
+- competition name and season are normalized into a fixed local shape
+- venue city is derived from the last segment of `location.longDescription`
+- home and away teams are detected from `HOME_AWAY` markers, with fallback to the first two items when markers are missing
+- match status is inferred from the upstream `PERIOD` code
+- score is taken from `TOT` and `H1` period rows
+- scorers are built from play-by-play actions where a `SHOT` or `PEN` action has result `GOAL`
+- lineups are built from team athletes, with starter detection and position lookup from available entries
+
+### How endpoint ordering is determined
+
+There are two ordering stages in the current implementation.
+
+#### 1. Upstream schedule ordering before persistence
+
+- After all day schedules are combined, football events are sorted by `startDate` ascending.
+- This gives deterministic import order before data is written to PostgreSQL.
+
+#### 2. Cached API response ordering
+
+- The public `GET /api/events` response is returned from the repository, not directly from the in-memory upstream sort.
+- The repository currently orders cached rows by `endDate` ascending and then `sourceEventId` ascending.
+- That means the list ordering visible in the API and frontend is determined by the database query order, not strictly by kickoff time.
+
+If strict kickoff ordering is required at the API boundary, the repository ordering should be aligned to `startDate`.
+
+### Assumptions for missing or inconsistent schedule data
+
+The current implementation makes these fallback assumptions:
+
+- if the upstream schedule or detail endpoint cannot be reached, the API returns `502 Bad Gateway`
+- if the upstream response has no `HOME_AWAY` markers, the first item is treated as home and the second as away
+- if venue data is missing, venue fields fall back to empty strings
+- if the location description is missing, the city falls back to an empty string
+- if the match `PERIOD` code is missing or unknown, status falls back to `SCHEDULED`
+- if total score or half-time score rows are missing, score values fall back to `0`
+- if play-by-play data is missing, scorers are returned as an empty array
+- if a goal action has no resolvable athlete or assist, that part is skipped rather than failing the whole match mapping
+- if a scorer minute cannot be parsed from the upstream string, it falls back to `0`
+- if formation or coach data is missing, those fields fall back to `unknown`
+- if a player position cannot be resolved from the upstream payload, it falls back to `UNK`
+- the dashboard is cache-first, so an empty database is treated as a valid initial state until a full refetch is triggered
+
+### Current tradeoff
+
+The parser is intentionally defensive: it prefers returning a usable partial match payload over failing the entire response when optional upstream fields are missing. That keeps the API resilient, but it also means some fields may contain fallback values rather than hard validation errors.

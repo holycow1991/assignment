@@ -6,7 +6,7 @@
     "node": "23.11.1",
     "pnpm": "10.33.0"
   },
-  "description": "Assignment task — Paris 2024 Olympic football endpoint generator",
+  "description": "Assignment task - Paris 2024 Olympic football endpoint generator",
   "scripts": {
     "dev": "pnpm --parallel --filter \"./apps/*\" dev",
     "dev:web": "pnpm --filter @assignment/web dev",

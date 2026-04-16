@@ -11,11 +11,11 @@ export class EventRepository {
   ) {}
 
   async upsert(entities: EventEntity[]): Promise<void> {
-    await this.repo.upsert(entities, ["id"]);
+    await this.repo.upsert(entities, ["sourceEventId"]);
   }
 
   findAll(): Promise<EventEntity[]> {
-    return this.repo.find({ order: { startDate: "ASC" } });
+    return this.repo.find({ order: { endDate: "ASC", sourceEventId: "ASC" } });
   }
 
   findByExternalId(externalId: string): Promise<EventEntity | null> {
