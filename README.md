@@ -20,14 +20,14 @@ The frontend displays cached events in a table and lets you:
 
 ## Stack
 
-| Layer | Technology |
-| --- | --- |
-| Frontend | Next.js 15, React 19, TanStack Query, TypeScript |
-| Backend | NestJS 11, TypeScript |
-| Database | PostgreSQL 17 |
-| ORM | TypeORM 0.3 |
-| Package manager | pnpm 10 |
-| Runtime | Node.js 23 |
+| Layer           | Technology                                       |
+| --------------- | ------------------------------------------------ |
+| Frontend        | Next.js 15, React 19, TanStack Query, TypeScript |
+| Backend         | NestJS 11, TypeScript                            |
+| Database        | PostgreSQL 17                                    |
+| ORM             | TypeORM 0.3                                      |
+| Package manager | pnpm 10                                          |
+| Runtime         | Node.js 23                                       |
 
 ## Repo Layout
 
@@ -121,22 +121,22 @@ Typical flow:
 
 Defined in `apps/api/.env`:
 
-| Variable | Default |
-| --- | --- |
-| `PORT` | `3001` |
-| `DB_HOST` | `localhost` |
-| `DB_PORT` | `5432` |
-| `DB_USER` | `postgres` |
-| `DB_PASS` | `postgres` |
-| `DB_NAME` | `assignment` |
+| Variable            | Default                      |
+| ------------------- | ---------------------------- |
+| `PORT`              | `3001`                       |
+| `DB_HOST`           | `localhost`                  |
+| `DB_PORT`           | `5432`                       |
+| `DB_USER`           | `postgres`                   |
+| `DB_PASS`           | `postgres`                   |
+| `DB_NAME`           | `assignment`                 |
 | `OLYMPICS_BASE_URL` | `https://stacy.olympics.com` |
 
 ### Web
 
 Defined in `apps/web/.env.local`:
 
-| Variable | Default |
-| --- | --- |
+| Variable              | Default                     |
+| --------------------- | --------------------------- |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:3001/api` |
 
 ## API
@@ -151,14 +151,14 @@ Example response:
 
 ```json
 {
-	"events": [
-		{
-			"externalId": "d3a8f9d8-...",
-			"genderCode": "M",
-			"startDate": "2024-07-24T17:00:00.000Z",
-			"competitors": [{ "name": "France" }, { "name": "United States" }]
-		}
-	]
+  "events": [
+    {
+      "externalId": "d3a8f9d8-...",
+      "genderCode": "M",
+      "startDate": "2024-07-24T17:00:00.000Z",
+      "competitors": [{ "name": "France" }, { "name": "United States" }]
+    }
+  ]
 }
 ```
 
@@ -182,10 +182,10 @@ The API uses a global exception filter. Errors are returned in this shape:
 
 ```json
 {
-	"statusCode": 404,
-	"message": "Event with id ... not found",
-	"path": "/api/events/...",
-	"timestamp": "2026-04-16T12:00:00.000Z"
+  "statusCode": 404,
+  "message": "Event with id ... not found",
+  "path": "/api/events/...",
+  "timestamp": "2026-04-16T12:00:00.000Z"
 }
 ```
 
@@ -193,15 +193,15 @@ The API uses a global exception filter. Errors are returned in this shape:
 
 Run from the repo root:
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Run `web` and `api` in parallel |
-| `pnpm dev:web` | Run the Next.js app |
-| `pnpm dev:api` | Run the NestJS API |
-| `pnpm build` | Build shared types, then both apps |
-| `pnpm build:web` | Build the frontend |
-| `pnpm build:api` | Build the backend |
-| `pnpm typecheck` | Type-check all workspaces |
+| Command          | Description                        |
+| ---------------- | ---------------------------------- |
+| `pnpm dev`       | Run `web` and `api` in parallel    |
+| `pnpm dev:web`   | Run the Next.js app                |
+| `pnpm dev:api`   | Run the NestJS API                 |
+| `pnpm build`     | Build shared types, then both apps |
+| `pnpm build:web` | Build the frontend                 |
+| `pnpm build:api` | Build the backend                  |
+| `pnpm typecheck` | Type-check all workspaces          |
 
 ## Docker
 
@@ -250,6 +250,17 @@ Simplest self-hosted option:
 
 - one VM or VPS using `docker-compose.prod.yml`
 
+## Todo
+
+Hello future developers! -> here are some things you can do if you are willing to contribute:
+
+- [ ] Add proper migration system
+- [ ] Add proper config module with env var validation
+- [ ] Add tests
+- [ ] Add json diff inside application
+- [ ] Refactor backend into hexagonal architecture - optional as we are short on time.
+- [ ] Improve caching strategy as in future application could be extended with live events - however now it's not needed as we operate in distand past.
+
 ## Implementation Notes
 
 ### How data is retrieved and parsed
@@ -258,10 +269,10 @@ The backend uses two upstream retrieval flows.
 
 #### 1. Schedule import
 
-- The API client generates one Olympics schedule URL per day for the fixed Paris 2024 window from `2024-07-24` through `2024-08-11`.
+- The API client generates one Olympics schedule URL per day for the fixed Paris 2024 window from `2024-07-24` through `2024-08-11` thats how long oly games are running.
 - Those day endpoints are fetched in parallel.
 - All returned `units` arrays are flattened into one collection.
-- Only rows with `disciplineCode === "FBL"` are kept.
+- Only rows with `disciplineCode === "FBL"` are kept. "FBL" is code for Football
 - The schedule DTO maps each upstream schedule unit into the local `EventEntity` shape used for caching.
 - For the cached list response, only a subset of fields is exposed: `externalId`, `genderCode`, `startDate`, and competitor names.
 
@@ -302,7 +313,6 @@ If strict kickoff ordering is required at the API boundary, the repository order
 
 The current implementation makes these fallback assumptions:
 
-- if the upstream schedule or detail endpoint cannot be reached, the API returns `502 Bad Gateway`
 - if the upstream response has no `HOME_AWAY` markers, the first item is treated as home and the second as away
 - if venue data is missing, venue fields fall back to empty strings
 - if the location description is missing, the city falls back to an empty string
