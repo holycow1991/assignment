@@ -34,7 +34,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
     };
 
-    const logContext = "GlobalExceptionFilter";
     const metadata = {
       method: request.method,
       path: body.path,

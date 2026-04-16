@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -11,7 +12,13 @@ export class EventRepository {
   ) {}
 
   async upsert(entities: EventEntity[]): Promise<void> {
-    await this.repo.upsert(entities, ["sourceEventId"]);
+    await this.repo.upsert(
+      entities.map((entity) => ({
+        ...entity,
+        externalId: entity.externalId || randomUUID(),
+      })),
+      ["sourceEventId"],
+    );
   }
 
   findAll(): Promise<EventEntity[]> {

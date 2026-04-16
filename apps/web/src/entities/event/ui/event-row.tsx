@@ -24,9 +24,11 @@ export function EventRow({
       <td>{formatDateTime(event.startDate)}</td>
       <td>
         <div className="teams">
-          <strong>{event.competitors[0]?.name ?? "TBD"}</strong>
-          <span className="muted">vs</span>
-          <strong>{event.competitors[1]?.name ?? "TBD"}</strong>
+          <strong>
+            {event.competitors[0]?.name ?? "TBD"}{" "}
+            <span className="muted">vs </span>
+            {event.competitors[1]?.name ?? "TBD"}
+          </strong>
         </div>
       </td>
       <td>{event.genderCode === "M" ? "Men" : "Women"}</td>
@@ -37,7 +39,7 @@ export function EventRow({
           target="_blank"
           rel="noreferrer"
         >
-          {event.externalId}
+          Go to event JSON
         </a>
       </td>
       <td>

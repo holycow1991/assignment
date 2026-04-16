@@ -132,6 +132,8 @@ Defined in `apps/api/.env`:
 | `DB_NAME`           | `assignment`                 |
 | `OLYMPICS_BASE_URL` | `https://stacy.olympics.com` |
 
+Endpoint tests use `apps/api/.env.test`, which points to the isolated test database on port `5433`.
+
 ### Web
 
 Defined in `apps/web/.env.local`:
@@ -198,15 +200,19 @@ The API uses a global exception filter. Errors are returned in this shape:
 
 Run from the repo root:
 
-| Command          | Description                        |
-| ---------------- | ---------------------------------- |
-| `pnpm dev`       | Run `web` and `api` in parallel    |
-| `pnpm dev:web`   | Run the Next.js app                |
-| `pnpm dev:api`   | Run the NestJS API                 |
-| `pnpm build`     | Build shared types, then both apps |
-| `pnpm build:web` | Build the frontend                 |
-| `pnpm build:api` | Build the backend                  |
-| `pnpm typecheck` | Type-check all workspaces          |
+| Command                    | Description                                           |
+| -------------------------- | ----------------------------------------------------- |
+| `pnpm dev`                 | Run `web` and `api` in parallel                       |
+| `pnpm dev:web`             | Run the Next.js app                                   |
+| `pnpm dev:api`             | Run the NestJS API                                    |
+| `pnpm build`               | Build shared types, then both apps                    |
+| `pnpm build:web`           | Build the frontend                                    |
+| `pnpm build:api`           | Build the backend                                     |
+| `pnpm typecheck`           | Type-check all workspaces                             |
+| `pnpm test:api:db:up`      | Start the isolated PostgreSQL test database           |
+| `pnpm test:api:db:migrate` | Run API migrations against the isolated test database |
+| `pnpm test:api:endpoints`  | Run Jest and Supertest endpoint suites                |
+| `pnpm test:api:db:down`    | Stop and remove the isolated test database            |
 
 API migration commands:
 
@@ -225,6 +231,19 @@ docker compose up -d
 docker compose down
 docker compose down -v
 ```
+
+### Endpoint test Postgres
+
+Use the dedicated test Compose file to keep endpoint suites isolated from the local development database:
+
+```bash
+pnpm test:api:db:up
+pnpm test:api:db:migrate
+pnpm test:api:endpoints
+pnpm test:api:db:down
+```
+
+The endpoint suites live under `apps/api/test`, use Jest with Supertest, mock the upstream Olympics API, and keep reusable payload generators in `apps/api/test/generators`.
 
 ### Full-stack deployment on VPS/VM
 
@@ -270,7 +289,8 @@ Hello future developers! -> here are some things you can do if you are willing t
 
 - [x] Migration system
 - [ ] Add proper config module with env var validation
-- [ ] Add tests
+- [x] Add tests
+- [ ] Tidy up tests
 - [ ] Add json diff inside application
 - [ ] Refactor backend into hexagonal architecture - optional as we are short on time.
 - [ ] Improve caching strategy as in future application could be extended with live events - however now it's not needed as we operate in distand past.
