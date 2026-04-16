@@ -1,18 +1,11 @@
 export class EventListResponseDto {
   events: EventListUnitResponseDto[];
 
-  constructor(
-    events: Array<{
-      sourceEventId: string;
-      genderCode: string;
-      startDate: string;
-      competitors: Array<{ name: string }>;
-    }>,
-  ) {
+  constructor(events: Array<EventListUnitResponseDto>) {
     this.events = events.map(
       (e) =>
         new EventListUnitResponseDto({
-          sourceEventId: e.sourceEventId,
+          externalId: e.externalId,
           genderCode: e.genderCode,
           startDate: e.startDate,
           competitors: e.competitors,
@@ -22,23 +15,23 @@ export class EventListResponseDto {
 }
 
 export class EventListUnitResponseDto {
-  sourceEventId: string;
+  externalId: string;
   genderCode: string;
   startDate: string;
   competitors: Array<{ name: string }>;
 
   constructor({
-    sourceEventId,
+    externalId,
     genderCode,
     startDate,
     competitors,
   }: {
-    sourceEventId: string;
+    externalId: string;
     genderCode: string;
     startDate: string;
     competitors: Array<{ name: string }>;
   }) {
-    this.sourceEventId = sourceEventId;
+    this.externalId = externalId;
     this.genderCode = genderCode;
     this.startDate = startDate;
     this.competitors = competitors;

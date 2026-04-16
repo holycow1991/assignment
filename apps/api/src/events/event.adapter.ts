@@ -11,8 +11,6 @@ import type {
   Venue,
 } from "@assignment/types";
 
-// ── Raw Olympics H2H response types ──────────────────────────────────────────
-
 interface ExtendedInfo {
   ei_code: string;
   ei_value: string;
