@@ -1,5 +1,4 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
-import type { Competitor } from "../events-api.client";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("events")
 export class EventEntity {
@@ -7,7 +6,7 @@ export class EventEntity {
   id!: string;
 
   @Column()
-  eventCode!: string;
+  sourceEventId!: string;
 
   @Column()
   disciplineName!: string;
@@ -59,7 +58,4 @@ export class EventEntity {
 
   @Column({ type: "jsonb" })
   competitors!: { name: string }[];
-
-  @Column({ type: "jsonb" })
-  extraData!: { detailUrl: string };
 }

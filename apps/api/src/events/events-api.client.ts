@@ -1,64 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { EventListResponseDto } from "./dto/event-list-response.dto";
-
-interface CompetitorResults {
-  position: string;
-  mark: string;
-  winnerLoserTie: string;
-  medalType: string;
-  irm: string;
-}
-
-interface Competitor {
-  code: string;
-  noc: string;
-  name: string;
-  order: number;
-  results: CompetitorResults;
-}
-
-export interface ScheduleUnit {
-  disciplineName: string;
-  eventUnitName: string;
-  id: string;
-  disciplineCode: string;
-  genderCode: string;
-  eventCode: string;
-  phaseCode: string;
-  eventId: string;
-  eventName: string;
-  phaseId: string;
-  phaseName: string;
-  disciplineId: string;
-  eventOrder: number;
-  phaseType: string;
-  eventUnitType: string;
-  olympicDay: string;
-  startDate: string;
-  endDate: string;
-  hideStartDate: boolean;
-  hideEndDate: boolean;
-  startText: string;
-  order: number;
-  venue: string;
-  venueDescription: string;
-  location: string;
-  locationDescription: string;
-  status: string;
-  statusDescription: string;
-  medalFlag: number;
-  liveFlag: boolean;
-  scheduleItemType: string;
-  unitNum: string;
-  sessionCode: string;
-  competitors: Competitor[];
-  extraData: { detailUrl: string };
-}
-
-interface ScheduleDayResponse {
-  units: ScheduleUnit[];
-}
+import { ScheduleDayResponse } from "./event.types";
+import { ScheduleDayListResponseDto } from "./dto/schedule-day-list-response.dto";
 
 @Injectable()
 export class EventsApiClient {
@@ -70,16 +13,7 @@ export class EventsApiClient {
       "https://stacy.olympics.com",
     );
   }
-
-  async getMockEvents() {
-    const response = await fetch(`${this.baseUrl}/events/mock`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch mock events: ${response.statusText}`);
-    }
-    return response.json();
-  }
-
-  async getEvents(): Promise<EventListResponseDto> {
+  async getEvents(): Promise<ScheduleDayListResponseDto> {
     const urls = this.getOlympicsDateUrls();
     const responses = await Promise.all(
       urls.map((url) =>
@@ -93,7 +27,7 @@ export class EventsApiClient {
         }),
       ),
     );
-    return new EventListResponseDto(
+    return new ScheduleDayListResponseDto(
       responses
         .flatMap((day) => day.units)
         .filter((unit) => unit.disciplineCode === "FBL")

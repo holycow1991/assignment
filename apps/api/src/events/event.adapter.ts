@@ -124,8 +124,6 @@ export class EventAdapter {
     };
   }
 
-  // ── Private helpers ─────────────────────────────────────────────────────────
-
   private findTeamItem(items: Item[], side: "HOME" | "AWAY"): Item {
     const found = items.find((item) =>
       item.eventUnitEntries?.some(

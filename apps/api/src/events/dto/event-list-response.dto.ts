@@ -1,13 +1,18 @@
-import { ScheduleUnit } from "../events-api.client";
-
 export class EventListResponseDto {
   events: EventListUnitResponseDto[];
 
-  constructor(events: ScheduleUnit[]) {
+  constructor(
+    events: Array<{
+      sourceEventId: string;
+      genderCode: string;
+      startDate: string;
+      competitors: Array<{ name: string }>;
+    }>,
+  ) {
     this.events = events.map(
       (e) =>
         new EventListUnitResponseDto({
-          id: e.id,
+          sourceEventId: e.sourceEventId,
           genderCode: e.genderCode,
           startDate: e.startDate,
           competitors: e.competitors,
@@ -17,25 +22,25 @@ export class EventListResponseDto {
 }
 
 export class EventListUnitResponseDto {
-  id: string;
+  sourceEventId: string;
   genderCode: string;
   startDate: string;
   competitors: Array<{ name: string }>;
 
   constructor({
-    id,
+    sourceEventId,
     genderCode,
     startDate,
     competitors,
   }: {
-    id: string;
+    sourceEventId: string;
     genderCode: string;
     startDate: string;
-    competitors: ScheduleUnit["competitors"];
+    competitors: Array<{ name: string }>;
   }) {
-    this.id = id;
+    this.sourceEventId = sourceEventId;
     this.genderCode = genderCode;
     this.startDate = startDate;
-    this.competitors = competitors.map((c) => ({ name: c.name }));
+    this.competitors = competitors;
   }
 }
